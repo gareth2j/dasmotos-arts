@@ -1,20 +1,18 @@
 pipeline {
-        agent none
-        stages {
-          stage("build & SonarQube analysis") {
-            agent any
+    agent any
+    tools {
+        maven 'Maven'
+    }
+
+    stages {
+
+        stage('SonarQube Analysis') {
             steps {
-              withSonarQubeEnv('sonarqube-localhost') {
-                sh 'mvn clean package sonar:sonar'
-              }
+                withSonarQubeEnv('sonarqube-localhost') {
+                    bat '''mvn clean verify sonar:sonar -Dsonar.projectKey=ProjectNameSonar -Dsonar.projectName='ProjectNameSonar' -Dsonar.host.url=http://localhost:9000''' //port 9000 is default for sonar
+                    echo 'SonarQube Analysis Completed'
+                }
             }
-          }
-          stage("Quality Gate") {
-            steps {
-              timeout(time: 1, unit: 'HOURS') {
-                waitForQualityGate abortPipeline: true
-              }
-            }
-          }
         }
-      }
+    }
+}
